@@ -6,7 +6,11 @@ import { LineChart, Line, BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tool
 import { Users, Activity, Eye, UserPlus, Clock, TrendingDown, Zap, AlertCircle, Globe } from 'lucide-react';
 import { GoogleAdsMetrics } from './GoogleAdsMetrics';
 import { MetricoolMetrics } from './MetricoolMetrics';
-import { WorldHeatmap } from './WorldHeatmap';
+import dynamic from 'next/dynamic';
+const WorldHeatmap = dynamic(
+  () => import('./WorldHeatmap').then(m => m.WorldHeatmap),
+  { ssr: false, loading: () => <p style={{ color: '#8a7055', fontSize: 13 }}>Loading map…</p> }
+);
 
 interface GA4Data {
   companyId: string;
@@ -183,7 +187,6 @@ export function GA4Dashboard() {
   return (
     <div style={page}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         * { box-sizing: border-box; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .rb:hover { background: ${C.raised} !important; color: ${C.text} !important; }
