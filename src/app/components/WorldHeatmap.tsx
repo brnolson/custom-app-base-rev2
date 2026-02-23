@@ -85,7 +85,7 @@ export function WorldHeatmap({ countries }: { countries: CountryData[] }) {
         >
           <ZoomableGroup>
             <Geographies geography={GEO_URL}>
-              {({ geographies }) =>
+              {({ geographies }: { geographies: any[] }) =>
                 geographies.map(geo => {
                   const iso3 = geo.id ? String(geo.id).padStart(3, '0') : '';
                   // Find by numeric ISO code
