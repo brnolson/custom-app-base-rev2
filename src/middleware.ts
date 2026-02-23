@@ -14,6 +14,7 @@ const cspHeader = `
     style-src 'self' 'nonce-${nonce}' https://fonts.googleapis.com;
     img-src 'self' blob: data:;
     font-src 'self' https://fonts.gstatic.com;
+    connect-src 'self' https://cdn.jsdelivr.net;
     object-src 'none';
     base-uri 'self';
     form-action 'self';
