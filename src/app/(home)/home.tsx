@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { copilotApi } from 'copilot-node-sdk';
 import { GA4Dashboard } from '@/app/components/GA4Dashboard';
 import { TokenGate } from '@/components/TokenGate';
@@ -20,7 +21,9 @@ async function Content({ searchParams }: { searchParams: SearchParams }) {
       background: '#071a0e',
       overflowY: 'auto',
     }}>
-      <GA4Dashboard />
+      <Suspense fallback={null}>
+        <GA4Dashboard />
+      </Suspense>
     </div>
   );
 }
