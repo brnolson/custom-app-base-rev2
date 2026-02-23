@@ -12,15 +12,15 @@ async function Content({ searchParams }: { searchParams: SearchParams }) {
     token: typeof token === 'string' ? token : undefined,
   });
 
-  await copilot.retrieveWorkspace();
+  try {
+    await copilot.retrieveWorkspace();
+  } catch (err) {
+    console.error('retrieveWorkspace failed:', err);
+    throw err; // still throw so we see it, but now it logs the real message
+  }
 
   return (
-    <div style={{
-      position: 'fixed',
-      inset: 0,
-      background: '#071a0e',
-      overflowY: 'auto',
-    }}>
+    <div style={{ position: 'fixed', inset: 0, background: '#071a0e', overflowY: 'auto' }}>
       <Suspense fallback={null}>
         <GA4Dashboard />
       </Suspense>
