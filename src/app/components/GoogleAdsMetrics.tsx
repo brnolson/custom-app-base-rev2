@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell, ResponsiveContainer } from 'recharts';
 import { TrendingUp, MousePointer, DollarSign, BarChart2, RefreshCw, Target, Percent, AlertTriangle, Info } from 'lucide-react';
 
@@ -31,17 +30,15 @@ interface GoogleAdsData {
   campaigns?: Array<{ id: string; name: string; status: string; impressions: number; clicks: number; ctr: number; cost: number; conversions: number; conversionsValue: number; }>;
 }
 
-export function GoogleAdsMetrics({ dateRange }: { dateRange: { start: string; end: string } }) {
+export function GoogleAdsMetrics({ token, dateRange }: { token: string; dateRange: { start: string; end: string } }) {
   const [data, setData] = useState<GoogleAdsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const searchParams = useSearchParams();
 
   useEffect(() => {
     async function go() {
       setLoading(true); setError(null);
       try {
-        const token = searchParams.get('token');
         const res = await fetch(`/api/google-ads/metrics?token=${token}&startDate=${dateRange.start}&endDate=${dateRange.end}`);
         if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Failed'); }
         setData(await res.json());
@@ -49,7 +46,7 @@ export function GoogleAdsMetrics({ dateRange }: { dateRange: { start: string; en
       finally { setLoading(false); }
     }
     go();
-  }, [searchParams, dateRange]);
+  }, [token, dateRange]);
 
   if (loading) return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '16px 0', fontFamily: 'Inter, sans-serif' }}>

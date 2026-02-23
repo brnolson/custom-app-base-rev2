@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell, ResponsiveContainer } from 'recharts';
 import { Users, Eye, Heart, MessageCircle, Share2, AlertTriangle, Instagram, Linkedin, Twitter } from 'lucide-react';
 
@@ -40,17 +39,15 @@ interface MetricoolData {
   profile: any; stats: any; posts: any[];
 }
 
-export function MetricoolMetrics({ dateRange }: { dateRange: { start: string; end: string } }) {
+export function MetricoolMetrics({ token, dateRange }: { token: string; dateRange: { start: string; end: string } }) {
   const [data, setData] = useState<MetricoolData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const searchParams = useSearchParams();
 
   useEffect(() => {
     async function go() {
       setLoading(true); setError(null);
       try {
-        const token = searchParams.get('token');
         const res = await fetch(`/api/metricool/metrics?token=${token}&startDate=${dateRange.start}&endDate=${dateRange.end}`);
         if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Failed'); }
         setData(await res.json());
@@ -58,7 +55,7 @@ export function MetricoolMetrics({ dateRange }: { dateRange: { start: string; en
       finally { setLoading(false); }
     }
     go();
-  }, [searchParams, dateRange]);
+  }, [token, dateRange]);
 
   if (loading) return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '16px 0', fontFamily: 'Inter, sans-serif' }}>
@@ -94,10 +91,10 @@ export function MetricoolMetrics({ dateRange }: { dateRange: { start: string; en
   }));
 
   const topKpis = [
-    { label: 'Followers',   value: totalFollowers.toLocaleString(),   color: C.tan,  Icon: Users },
-    { label: 'Impressions', value: totalImpressions.toLocaleString(), color: C.rust, Icon: Eye },
-    { label: 'Engagements', value: totalEngagements.toLocaleString(), color: C.cream,Icon: Heart },
-    { label: 'Eng. Rate',   value: `${engRate.toFixed(2)}%`,          color: C.gold, Icon: Share2 },
+    { label: 'Followers',   value: totalFollowers.toLocaleString(),   color: C.tan,   Icon: Users },
+    { label: 'Impressions', value: totalImpressions.toLocaleString(), color: C.rust,  Icon: Eye },
+    { label: 'Engagements', value: totalEngagements.toLocaleString(), color: C.cream, Icon: Heart },
+    { label: 'Eng. Rate',   value: `${engRate.toFixed(2)}%`,          color: C.gold,  Icon: Share2 },
   ];
 
   return (
@@ -108,7 +105,6 @@ export function MetricoolMetrics({ dateRange }: { dateRange: { start: string; en
         <span style={{ marginLeft: 'auto', fontSize: 11, color: C.dim }}>{data.companyName}</span>
       </div>
 
-      {/* Top KPIs */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
         {topKpis.map(({ label, value, color, Icon }, i) => (
           <div key={i} style={{ background: C.bg, borderRadius: 12, padding: '16px', border: `1px solid ${C.border}` }}>
@@ -121,7 +117,6 @@ export function MetricoolMetrics({ dateRange }: { dateRange: { start: string; en
         ))}
       </div>
 
-      {/* Per-network cards */}
       {networks.length > 0 && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: 12, marginBottom: 24 }}>
           {networks.map((net: string) => {
@@ -148,7 +143,6 @@ export function MetricoolMetrics({ dateRange }: { dateRange: { start: string; en
         </div>
       )}
 
-      {/* Chart */}
       {chartData.length > 0 && (
         <div style={{ marginBottom: 24 }}>
           <p style={{ fontSize: 10, fontWeight: 700, color: C.dim, letterSpacing: '0.1em', textTransform: 'uppercase', margin: '0 0 14px' }}>Followers by Network</p>
@@ -166,7 +160,6 @@ export function MetricoolMetrics({ dateRange }: { dateRange: { start: string; en
         </div>
       )}
 
-      {/* Recent posts */}
       {posts.length > 0 && (
         <div>
           <p style={{ fontSize: 10, fontWeight: 700, color: C.dim, letterSpacing: '0.1em', textTransform: 'uppercase', margin: '0 0 14px' }}>Recent Posts</p>

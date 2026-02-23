@@ -27,22 +27,21 @@ interface GA4Data {
   countries: Array<{ country: string; users: number }>;
 }
 
-// Cream base, brown accents
 const C = {
-  bg:       '#faf4ea',   // warm cream page background
-  surface:  '#f2e8d5',   // card surface
-  raised:   '#ede0c4',   // slightly raised / hover
-  border:   '#d9c9ad',   // borders
-  muted:    '#c8b490',   // muted elements
-  text:     '#2c1a0e',   // deep brown text
-  dim:      '#8a7055',   // secondary text
-  brown:    '#6b4226',   // primary brown accent
-  brownMid: '#8b5a2b',   // mid brown
-  tan:      '#b8935a',   // warm tan accent
-  gold:     '#a07030',   // gold/amber accent
-  rust:     '#9b4a20',   // rust for negatives
-  sky:      '#5a8fa8',   // cool blue contrast
-  sage:     '#6a8f6a',   // sage green contrast
+  bg:       '#faf4ea',
+  surface:  '#f2e8d5',
+  raised:   '#ede0c4',
+  border:   '#d9c9ad',
+  muted:    '#c8b490',
+  text:     '#2c1a0e',
+  dim:      '#8a7055',
+  brown:    '#6b4226',
+  brownMid: '#8b5a2b',
+  tan:      '#b8935a',
+  gold:     '#a07030',
+  rust:     '#9b4a20',
+  sky:      '#5a8fa8',
+  sage:     '#6a8f6a',
 };
 
 const PALETTE = [C.brown, C.tan, C.gold, C.sky, C.sage, C.rust, C.brownMid, '#7a5c3a'];
@@ -114,12 +113,12 @@ export function GA4Dashboard() {
   const [error, setError] = useState<string | null>(null);
   const [selectedRange, setSelectedRange] = useState(3);
   const searchParams = useSearchParams();
+  const token = searchParams.get('token') ?? '';
 
   useEffect(() => {
     async function fetchMetrics() {
       setLoading(true); setError(null);
       try {
-        const token = searchParams.get('token');
         const range = DATE_RANGES[selectedRange].value;
         const res = await fetch(`/api/ga4/metrics?token=${token}&startDate=${range.start}&endDate=${range.end}`);
         if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Failed to fetch'); }
@@ -128,7 +127,7 @@ export function GA4Dashboard() {
       finally { setLoading(false); }
     }
     fetchMetrics();
-  }, [searchParams, selectedRange]);
+  }, [token, selectedRange]);
 
   const page: React.CSSProperties = {
     fontFamily: 'Inter, sans-serif',
@@ -314,12 +313,18 @@ export function GA4Dashboard() {
 
         {/* GOOGLE ADS */}
         <Card style={{ marginBottom: 16, borderColor: `${C.sky}60` }}>
-          <GoogleAdsMetrics dateRange={{ start: DATE_RANGES[selectedRange].value.start, end: DATE_RANGES[selectedRange].value.end }} />
+          <GoogleAdsMetrics
+            token={token}
+            dateRange={{ start: DATE_RANGES[selectedRange].value.start, end: DATE_RANGES[selectedRange].value.end }}
+          />
         </Card>
 
         {/* METRICOOL */}
         <Card style={{ marginBottom: 16, borderColor: `${C.tan}80` }}>
-          <MetricoolMetrics dateRange={{ start: DATE_RANGES[selectedRange].value.start, end: DATE_RANGES[selectedRange].value.end }} />
+          <MetricoolMetrics
+            token={token}
+            dateRange={{ start: DATE_RANGES[selectedRange].value.start, end: DATE_RANGES[selectedRange].value.end }}
+          />
         </Card>
 
         {/* TOP PAGES */}
