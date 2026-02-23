@@ -11,11 +11,15 @@ async function Content({ searchParams }: { searchParams: SearchParams }) {
     token: typeof token === 'string' ? token : undefined,
   });
 
-  // Keep workspace retrieval if needed elsewhere
   await copilot.retrieveWorkspace();
 
   return (
-    <div style={{ background: '#080f1a', minHeight: '100vh', margin: 0, padding: 0, width: '100%' }}>
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      background: '#071a0e',
+      overflowY: 'auto',
+    }}>
       <GA4Dashboard />
     </div>
   );
