@@ -138,6 +138,7 @@ export function GA4Dashboard() {
     position: 'fixed',
     top: 0, left: 0, right: 0, bottom: 0,
     overflowY: 'auto',
+    overflowX: 'hidden',
   };
 
   if (loading) return (
@@ -195,20 +196,48 @@ export function GA4Dashboard() {
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: ${C.bg}; }
         ::-webkit-scrollbar-thumb { background: ${C.muted}; border-radius: 3px; }
+
+        .dash-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 16px;
+          margin-bottom: 36px;
+          width: 100%;
+          min-width: 0;
+        }
+        .date-scroll {
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+          max-width: 100%;
+          flex-shrink: 0;
+        }
+        .date-scroll::-webkit-scrollbar { display: none; }
+        .date-inner {
+          display: flex;
+          gap: 2px;
+          background: ${C.surface};
+          padding: 4px;
+          border-radius: 10px;
+          border: 1px solid ${C.border};
+          width: max-content;
+        }
+        @media (max-width: 600px) {
+          .dash-header {
+            flex-direction: column;
+            align-items: stretch;
+          }
+          .date-scroll {
+            width: 100%;
+            flex-shrink: unset;
+          }
+        }
       `}</style>
 
       <div style={{ maxWidth: 1040, margin: '0 auto', padding: '32px 28px 56px' }}>
 
         {/* HEADER */}
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'flex-start', 
-          flexWrap: 'wrap', 
-          gap: 16, 
-          marginBottom: 36,
-          minWidth: 0,
-        }}>          
+        <div className="dash-header">
           <div>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: `${C.brown}15`, border: `1px solid ${C.brown}30`, borderRadius: 5, padding: '3px 10px', marginBottom: 12 }}>
               <Globe size={10} color={C.brown} />
@@ -217,28 +246,16 @@ export function GA4Dashboard() {
             <h1 style={{ fontSize: 26, fontWeight: 700, color: C.text, letterSpacing: '-0.02em', lineHeight: 1.1, margin: 0 }}>{data.companyName}</h1>
             <p style={{ fontSize: 13, color: C.dim, marginTop: 6 }}>Website performance overview</p>
           </div>
-          <div style={{ 
-            overflowX: 'auto', 
-            WebkitOverflowScrolling: 'touch',
-            flexShrink: 0,
-          }}>
-            <div style={{ 
-              display: 'flex', 
-              gap: 2, 
-              background: C.surface, 
-              padding: 4, 
-              borderRadius: 10, 
-              border: `1px solid ${C.border}`,
-              width: 'max-content',
-            }}>
+
+          <div className="date-scroll">
+            <div className="date-inner">
               {DATE_RANGES.map((r, i) => (
                 <button key={i} className="rb" onClick={() => setSelectedRange(i)} style={{
-                  border: 'none', borderRadius: 7, padding: '7px 10px', fontSize: 11, cursor: 'pointer',
-                  fontFamily: 'Inter, sans-serif', transition: 'all 0.15s',
+                  border: 'none', borderRadius: 7, padding: '7px 12px', fontSize: 12, cursor: 'pointer',
+                  fontFamily: 'Inter, sans-serif', transition: 'all 0.15s', whiteSpace: 'nowrap',
                   background: selectedRange === i ? C.brown : 'transparent',
                   color: selectedRange === i ? '#fdf6ec' : C.dim,
                   fontWeight: selectedRange === i ? 700 : 400,
-                  whiteSpace: 'nowrap',
                 }}>{r.label}</button>
               ))}
             </div>
