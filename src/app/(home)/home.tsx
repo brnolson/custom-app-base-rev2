@@ -20,7 +20,7 @@ async function Content({ searchParams }: { searchParams: SearchParams }) {
   }
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: '#071a0e', overflowY: 'auto' }}>
+    <div style={{ position: 'fixed', inset: 0, background: '#faf4ea', overflowY: 'auto' }}>
       <Suspense fallback={null}>
         <GA4Dashboard />
       </Suspense>

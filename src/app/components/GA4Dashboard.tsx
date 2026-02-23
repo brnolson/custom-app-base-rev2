@@ -200,7 +200,15 @@ export function GA4Dashboard() {
       <div style={{ maxWidth: 1040, margin: '0 auto', padding: '32px 28px 56px' }}>
 
         {/* HEADER */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16, marginBottom: 36 }}>
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'flex-start', 
+          flexWrap: 'wrap', 
+          gap: 16, 
+          marginBottom: 36,
+          minWidth: 0,
+        }}>          
           <div>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: `${C.brown}15`, border: `1px solid ${C.brown}30`, borderRadius: 5, padding: '3px 10px', marginBottom: 12 }}>
               <Globe size={10} color={C.brown} />
@@ -209,16 +217,31 @@ export function GA4Dashboard() {
             <h1 style={{ fontSize: 26, fontWeight: 700, color: C.text, letterSpacing: '-0.02em', lineHeight: 1.1, margin: 0 }}>{data.companyName}</h1>
             <p style={{ fontSize: 13, color: C.dim, marginTop: 6 }}>Website performance overview</p>
           </div>
-          <div style={{ display: 'flex', gap: 2, background: C.surface, padding: 4, borderRadius: 10, border: `1px solid ${C.border}` }}>
-            {DATE_RANGES.map((r, i) => (
-              <button key={i} className="rb" onClick={() => setSelectedRange(i)} style={{
-                border: 'none', borderRadius: 7, padding: '7px 14px', fontSize: 12, cursor: 'pointer',
-                fontFamily: 'Inter, sans-serif', transition: 'all 0.15s',
-                background: selectedRange === i ? C.brown : 'transparent',
-                color: selectedRange === i ? '#fdf6ec' : C.dim,
-                fontWeight: selectedRange === i ? 700 : 400,
-              }}>{r.label}</button>
-            ))}
+          <div style={{ 
+            overflowX: 'auto', 
+            WebkitOverflowScrolling: 'touch',
+            flexShrink: 0,
+          }}>
+            <div style={{ 
+              display: 'flex', 
+              gap: 2, 
+              background: C.surface, 
+              padding: 4, 
+              borderRadius: 10, 
+              border: `1px solid ${C.border}`,
+              width: 'max-content',
+            }}>
+              {DATE_RANGES.map((r, i) => (
+                <button key={i} className="rb" onClick={() => setSelectedRange(i)} style={{
+                  border: 'none', borderRadius: 7, padding: '7px 10px', fontSize: 11, cursor: 'pointer',
+                  fontFamily: 'Inter, sans-serif', transition: 'all 0.15s',
+                  background: selectedRange === i ? C.brown : 'transparent',
+                  color: selectedRange === i ? '#fdf6ec' : C.dim,
+                  fontWeight: selectedRange === i ? 700 : 400,
+                  whiteSpace: 'nowrap',
+                }}>{r.label}</button>
+              ))}
+            </div>
           </div>
         </div>
 
