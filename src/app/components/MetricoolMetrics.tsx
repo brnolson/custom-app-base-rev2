@@ -6,9 +6,9 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell, ResponsiveCo
 import { Users, Eye, Heart, MessageCircle, Share2, AlertTriangle, Instagram, Linkedin, Twitter } from 'lucide-react';
 
 const C = {
-  bg: '#1a1108', surface: '#241a0e', raised: '#2e2010', border: '#3d2e18',
-  muted: '#4a3820', text: '#f5ead8', dim: '#8a7055', cream: '#f0d9b0',
-  tan: '#c8a97a', gold: '#d4a853', rust: '#c0653a', sage: '#8aab8a', sky: '#7aafc8',
+  bg: '#faf4ea', surface: '#f2e8d5', raised: '#ede0c4', border: '#d9c9ad',
+  muted: '#c8b490', text: '#2c1a0e', dim: '#8a7055', cream: '#fdf6ec',
+  tan: '#b8935a', gold: '#a07030', rust: '#9b4a20', sage: '#6a8f6a', sky: '#5a8fa8',
 };
 
 const NET_COLORS: Record<string, string> = {

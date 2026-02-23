@@ -6,19 +6,15 @@ import { LineChart, Line, BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tool
 import { Users, Activity, Eye, UserPlus, Clock, TrendingDown, Zap, AlertCircle, Globe } from 'lucide-react';
 import { GoogleAdsMetrics } from './GoogleAdsMetrics';
 import { MetricoolMetrics } from './MetricoolMetrics';
+import { WorldHeatmap } from './WorldHeatmap';
 
 interface GA4Data {
   companyId: string;
   companyName: string;
   dateRange: { startDate: string; endDate: string };
   metrics: {
-    activeUsers: number;
-    sessions: number;
-    pageViews: number;
-    avgSessionDuration: number;
-    bounceRate: string;
-    newUsers: number;
-    engagementRate: string;
+    activeUsers: number; sessions: number; pageViews: number;
+    avgSessionDuration: number; bounceRate: string; newUsers: number; engagementRate: string;
   };
   timeSeries: Array<{ date: string; activeUsers: number; sessions: number; pageViews: number }>;
   topPages: Array<{ title: string; path: string; views: number }>;
@@ -27,24 +23,25 @@ interface GA4Data {
   countries: Array<{ country: string; users: number }>;
 }
 
-// Warm cream + brown palette
+// Cream base, brown accents
 const C = {
-  bg:      '#1a1108',   // very dark warm brown
-  surface: '#241a0e',   // card surface
-  raised:  '#2e2010',   // slightly raised
-  border:  '#3d2e18',   // border
-  muted:   '#4a3820',   // muted bg
-  text:    '#f5ead8',   // cream text
-  dim:     '#8a7055',   // muted text
-  cream:   '#f0d9b0',   // bright cream accent
-  tan:     '#c8a97a',   // warm tan
-  gold:    '#d4a853',   // gold
-  rust:    '#c0653a',   // rust/orange accent
-  sage:    '#8aab8a',   // muted sage for contrast
-  sky:     '#7aafc8',   // muted blue for contrast
+  bg:       '#faf4ea',   // warm cream page background
+  surface:  '#f2e8d5',   // card surface
+  raised:   '#ede0c4',   // slightly raised / hover
+  border:   '#d9c9ad',   // borders
+  muted:    '#c8b490',   // muted elements
+  text:     '#2c1a0e',   // deep brown text
+  dim:      '#8a7055',   // secondary text
+  brown:    '#6b4226',   // primary brown accent
+  brownMid: '#8b5a2b',   // mid brown
+  tan:      '#b8935a',   // warm tan accent
+  gold:     '#a07030',   // gold/amber accent
+  rust:     '#9b4a20',   // rust for negatives
+  sky:      '#5a8fa8',   // cool blue contrast
+  sage:     '#6a8f6a',   // sage green contrast
 };
 
-const PALETTE = [C.cream, C.tan, C.gold, C.rust, C.sage, C.sky, '#b8936a', '#a07850'];
+const PALETTE = [C.brown, C.tan, C.gold, C.sky, C.sage, C.rust, C.brownMid, '#7a5c3a'];
 
 const DATE_RANGES = [
   { label: 'Today',     value: { start: 'today',      end: 'today' } },
@@ -59,7 +56,7 @@ const DATE_RANGES = [
 const Tip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
   return (
-    <div style={{ background: C.raised, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 14px', fontFamily: 'Inter, sans-serif' }}>
+    <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 14px', fontFamily: 'Inter, sans-serif', boxShadow: '0 4px 16px rgba(0,0,0,0.1)' }}>
       <p style={{ color: C.dim, fontSize: 11, marginBottom: 6 }}>{label}</p>
       {payload.map((p: any, i: number) => (
         <p key={i} style={{ color: p.color, fontSize: 12, fontWeight: 600, margin: '2px 0' }}>
@@ -73,10 +70,10 @@ const Tip = ({ active, payload, label }: any) => {
 function Knob({ value, label, sub, color, pct }: { value: string; label: string; sub: string; color: string; pct: number }) {
   const r = 62, circ = 2 * Math.PI * r, dash = Math.min(pct / 100, 1) * circ;
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, flex: 1 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, flex: 1 }}>
       <div style={{ position: 'relative', width: 172, height: 172 }}>
         <svg width={172} height={172} style={{ transform: 'rotate(-90deg)' }}>
-          <circle cx={86} cy={86} r={r} fill="none" stroke={C.muted} strokeWidth={8} />
+          <circle cx={86} cy={86} r={r} fill="none" stroke={C.border} strokeWidth={8} />
           <circle cx={86} cy={86} r={r} fill="none" stroke={color} strokeWidth={8}
             strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
             style={{ transition: 'stroke-dasharray 0.7s ease' }} />
@@ -93,7 +90,7 @@ function Knob({ value, label, sub, color, pct }: { value: string; label: string;
 
 function Card({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
   return (
-    <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, padding: 28, ...style }}>
+    <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, padding: 28, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', ...style }}>
       {children}
     </div>
   );
@@ -142,7 +139,7 @@ export function GA4Dashboard() {
 
   if (loading) return (
     <div style={{ ...page, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ width: 28, height: 28, border: `2px solid ${C.muted}`, borderTop: `2px solid ${C.cream}`, borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+      <div style={{ width: 28, height: 28, border: `2px solid ${C.border}`, borderTop: `2px solid ${C.brown}`, borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
       <p style={{ color: C.dim, marginTop: 14, fontSize: 13 }}>Loading analytics…</p>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
@@ -150,7 +147,7 @@ export function GA4Dashboard() {
 
   if (error) return (
     <div style={{ ...page, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, padding: '16px 20px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, padding: '16px 20px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}>
         <AlertCircle size={16} color={C.rust} />
         <div>
           <p style={{ color: C.rust, fontWeight: 600, fontSize: 13, margin: 0 }}>Failed to load analytics</p>
@@ -189,9 +186,9 @@ export function GA4Dashboard() {
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         * { box-sizing: border-box; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .rb:hover { color: ${C.text} !important; }
-        .kc { transition: transform 0.15s, border-color 0.15s; }
-        .kc:hover { transform: translateY(-2px); border-color: ${C.tan} !important; }
+        .rb:hover { background: ${C.raised} !important; color: ${C.text} !important; }
+        .kc { transition: transform 0.15s, box-shadow 0.15s; }
+        .kc:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1) !important; }
         .pr:hover { background: ${C.raised} !important; }
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: ${C.bg}; }
@@ -203,9 +200,9 @@ export function GA4Dashboard() {
         {/* HEADER */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16, marginBottom: 36 }}>
           <div>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: `${C.gold}18`, border: `1px solid ${C.gold}35`, borderRadius: 5, padding: '3px 10px', marginBottom: 12 }}>
-              <Globe size={10} color={C.gold} />
-              <span style={{ fontSize: 10, fontWeight: 700, color: C.gold, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Google Analytics</span>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: `${C.brown}15`, border: `1px solid ${C.brown}30`, borderRadius: 5, padding: '3px 10px', marginBottom: 12 }}>
+              <Globe size={10} color={C.brown} />
+              <span style={{ fontSize: 10, fontWeight: 700, color: C.brown, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Google Analytics</span>
             </div>
             <h1 style={{ fontSize: 26, fontWeight: 700, color: C.text, letterSpacing: '-0.02em', lineHeight: 1.1, margin: 0 }}>{data.companyName}</h1>
             <p style={{ fontSize: 13, color: C.dim, marginTop: 6 }}>Website performance overview</p>
@@ -215,8 +212,8 @@ export function GA4Dashboard() {
               <button key={i} className="rb" onClick={() => setSelectedRange(i)} style={{
                 border: 'none', borderRadius: 7, padding: '7px 14px', fontSize: 12, cursor: 'pointer',
                 fontFamily: 'Inter, sans-serif', transition: 'all 0.15s',
-                background: selectedRange === i ? C.gold : 'transparent',
-                color: selectedRange === i ? C.bg : C.dim,
+                background: selectedRange === i ? C.brown : 'transparent',
+                color: selectedRange === i ? '#fdf6ec' : C.dim,
                 fontWeight: selectedRange === i ? 700 : 400,
               }}>{r.label}</button>
             ))}
@@ -224,14 +221,14 @@ export function GA4Dashboard() {
         </div>
 
         {/* HERO KNOBS */}
-        <Card style={{ marginBottom: 16, background: `linear-gradient(135deg, ${C.surface} 0%, ${C.bg} 100%)` }}>
+        <Card style={{ marginBottom: 16 }}>
           <SLabel>Key Highlights</SLabel>
-          <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', gap: 24, flexWrap: 'wrap', padding: '12px 0' }}>
-            <Knob value={`${engRate.toFixed(0)}%`}  label="Engagement Rate" sub="of sessions"   color={C.cream} pct={engRate} />
-            <div style={{ width: 1, height: 140, background: C.border }} />
+          <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', gap: 24, flexWrap: 'wrap', padding: '8px 0' }}>
+            <Knob value={`${engRate.toFixed(0)}%`} label="Engagement Rate" sub="of sessions" color={C.brown} pct={engRate} />
+            <div style={{ width: 1, height: 130, background: C.border }} />
             <Knob value={data.metrics.activeUsers.toLocaleString()} label="Active Users" sub={`${newPct}% new`} color={C.gold} pct={Math.min((data.metrics.activeUsers / Math.max(data.metrics.sessions, 1)) * 100, 100)} />
-            <div style={{ width: 1, height: 140, background: C.border }} />
-            <Knob value={`${bounce.toFixed(0)}%`}   label="Bounce Rate"     sub="leaving early" color={C.rust}  pct={bounce} />
+            <div style={{ width: 1, height: 130, background: C.border }} />
+            <Knob value={`${bounce.toFixed(0)}%`} label="Bounce Rate" sub="leaving early" color={C.rust} pct={bounce} />
           </div>
         </Card>
 
@@ -240,7 +237,7 @@ export function GA4Dashboard() {
           {kpis.map(({ label, value, Icon }, i) => (
             <div key={i} className="kc" style={{
               background: C.surface, border: `1px solid ${C.border}`, borderRadius: 12,
-              padding: '18px 14px', cursor: 'default',
+              padding: '18px 14px', cursor: 'default', boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                 <span style={{ fontSize: 9, color: C.dim, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase' }}>{label}</span>
@@ -262,7 +259,7 @@ export function GA4Dashboard() {
                 <YAxis tick={{ fill: C.dim, fontSize: 11, fontFamily: 'Inter' }} axisLine={false} tickLine={false} width={42} />
                 <Tooltip content={<Tip />} />
                 <Legend wrapperStyle={{ color: C.dim, fontSize: 11, fontFamily: 'Inter', paddingTop: 14 }} />
-                <Line type="monotone" dataKey="activeUsers" stroke={C.cream}  strokeWidth={2} dot={false} name="Active Users" />
+                <Line type="monotone" dataKey="activeUsers" stroke={C.brown}  strokeWidth={2} dot={false} name="Active Users" />
                 <Line type="monotone" dataKey="sessions"    stroke={C.gold}   strokeWidth={2} dot={false} name="Sessions" />
                 <Line type="monotone" dataKey="pageViews"   stroke={C.sky}    strokeWidth={2} dot={false} name="Page Views" />
               </LineChart>
@@ -285,7 +282,7 @@ export function GA4Dashboard() {
                         <span style={{ fontSize: 13, color: C.text }}>{src.source}</span>
                         <span style={{ fontSize: 13, color: col, fontWeight: 600 }}>{pct}%</span>
                       </div>
-                      <div style={{ height: 5, background: C.muted, borderRadius: 3, overflow: 'hidden' }}>
+                      <div style={{ height: 5, background: C.raised, borderRadius: 3, overflow: 'hidden' }}>
                         <div style={{ height: '100%', width: `${pct}%`, background: col, borderRadius: 3, transition: 'width 0.6s ease' }} />
                       </div>
                     </div>
@@ -313,12 +310,12 @@ export function GA4Dashboard() {
         </div>
 
         {/* GOOGLE ADS */}
-        <Card style={{ marginBottom: 16, borderColor: `${C.sky}40` }}>
+        <Card style={{ marginBottom: 16, borderColor: `${C.sky}60` }}>
           <GoogleAdsMetrics dateRange={{ start: DATE_RANGES[selectedRange].value.start, end: DATE_RANGES[selectedRange].value.end }} />
         </Card>
 
         {/* METRICOOL */}
-        <Card style={{ marginBottom: 16, borderColor: `${C.tan}40` }}>
+        <Card style={{ marginBottom: 16, borderColor: `${C.tan}80` }}>
           <MetricoolMetrics dateRange={{ start: DATE_RANGES[selectedRange].value.start, end: DATE_RANGES[selectedRange].value.end }} />
         </Card>
 
@@ -340,7 +337,7 @@ export function GA4Dashboard() {
                     <td style={{ padding: '14px', color: C.muted, fontSize: 12, width: 36 }}>{i + 1}</td>
                     <td style={{ padding: '14px', color: C.text, fontSize: 14 }}>{page.title}</td>
                     <td style={{ padding: '14px', color: C.sky, fontSize: 12, fontFamily: 'monospace' }}>{page.path}</td>
-                    <td style={{ padding: '14px', textAlign: 'right', color: C.cream, fontWeight: 600, fontSize: 14 }}>{page.views.toLocaleString()}</td>
+                    <td style={{ padding: '14px', textAlign: 'right', color: C.brown, fontWeight: 600, fontSize: 14 }}>{page.views.toLocaleString()}</td>
                   </tr>
                 ))}
               </tbody>
@@ -348,21 +345,11 @@ export function GA4Dashboard() {
           </Card>
         )}
 
-        {/* COUNTRIES */}
+        {/* WORLD HEATMAP */}
         {data.countries.length > 0 && (
           <Card>
-            <SLabel>Top Countries</SLabel>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 12 }}>
-              {data.countries.map((c, i) => (
-                <div key={i} style={{ background: C.bg, borderRadius: 10, padding: '18px', border: `1px solid ${C.border}` }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-                    <Globe size={11} color={C.dim} />
-                    <span style={{ fontSize: 11, color: C.dim }}>{c.country}</span>
-                  </div>
-                  <div style={{ fontSize: 22, fontWeight: 700, color: PALETTE[i % PALETTE.length], letterSpacing: '-0.02em' }}>{c.users.toLocaleString()}</div>
-                </div>
-              ))}
-            </div>
+            <SLabel>Global Audience</SLabel>
+            <WorldHeatmap countries={data.countries} />
           </Card>
         )}
 

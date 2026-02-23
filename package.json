@@ -23,6 +23,7 @@
     "react-code-blocks": "^0.1.6",
     "react-dom": "^18.2.0",
     "react-linkify": "^1.0.0-alpha",
+    "react-simple-maps": "^3.0.0",
     "recharts": "^2.5.0",
     "zod": "^3.22.4"
   },
