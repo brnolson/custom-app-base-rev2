@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell, ResponsiveContainer } from 'recharts';
+import { TrendingUp, MousePointer, DollarSign, BarChart2, RefreshCw, Target, Percent, AlertTriangle, Info } from 'lucide-react';
 
 interface GoogleAdsData {
   companyId: string;
   companyName: string;
   customerId: string;
   hasGoogleAds?: boolean;
-  message?: string;
   dateRange: { startDate: string; endDate: string };
   metrics?: {
     impressions: number;
@@ -34,11 +34,36 @@ interface GoogleAdsData {
 }
 
 interface GoogleAdsMetricsProps {
-  dateRange: {
-    start: string;
-    end: string;
-  };
+  dateRange: { start: string; end: string };
 }
+
+const PALETTE = ['#60A5FA', '#34D399', '#FBBF24', '#F472B6', '#A78BFA'];
+
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8, padding: '10px 14px' }}>
+        <p style={{ color: '#94a3b8', fontSize: 11, marginBottom: 6 }}>{label}</p>
+        {payload.map((p: any, i: number) => (
+          <p key={i} style={{ color: p.color, fontSize: 12, fontWeight: 600, margin: '2px 0' }}>
+            {p.name}: {typeof p.value === 'number' && p.name.includes('Cost') ? `$${p.value.toFixed(2)}` : p.value?.toLocaleString()}
+          </p>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
+
+const sectionTitle: React.CSSProperties = {
+  fontFamily: 'Inter, sans-serif',
+  fontSize: 10,
+  fontWeight: 600,
+  color: '#475569',
+  margin: '0 0 14px',
+  letterSpacing: '0.08em',
+  textTransform: 'uppercase',
+};
 
 export function GoogleAdsMetrics({ dateRange }: GoogleAdsMetricsProps) {
   const [data, setData] = useState<GoogleAdsData | null>(null);
@@ -50,180 +75,103 @@ export function GoogleAdsMetrics({ dateRange }: GoogleAdsMetricsProps) {
     async function fetchGoogleAds() {
       setLoading(true);
       setError(null);
-      
       try {
         const token = searchParams.get('token');
-        const response = await fetch(
-          `/api/google-ads/metrics?token=${token}&startDate=${dateRange.start}&endDate=${dateRange.end}`
-        );
-        
+        const response = await fetch(`/api/google-ads/metrics?token=${token}&startDate=${dateRange.start}&endDate=${dateRange.end}`);
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.error || 'Failed to fetch Google Ads data');
         }
-        
-        const result = await response.json();
-        setData(result);
+        setData(await response.json());
       } catch (err: any) {
         setError(err.message);
       } finally {
         setLoading(false);
       }
     }
-
     fetchGoogleAds();
   }, [searchParams, dateRange]);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="text-gray-500 text-lg">Loading Google Ads data...</div>
-      </div>
-    );
-  }
+  if (loading) return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '20px 0', fontFamily: 'Inter, sans-serif' }}>
+      <div style={{ width: 16, height: 16, border: '2px solid #1e293b', borderTop: '2px solid #60A5FA', borderRadius: '50%', animation: 'spin 0.7s linear infinite', flexShrink: 0 }} />
+      <span style={{ color: '#64748b', fontSize: 13 }}>Loading Google Ads…</span>
+    </div>
+  );
 
-  // Handle case where company doesn't have Google Ads
-  if (data && data.hasGoogleAds === false) {
-    return (
-      <div className="text-center py-12">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-200 mb-4">
-          <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-        </div>
-        <h3 className="text-2xl font-bold text-gray-700 mb-2">Google Ads Not Configured</h3>
-        <p className="text-gray-500 text-lg mb-6">
-          Google Ads are not set up for <span className="font-semibold">{data.companyName}</span>
-        </p>
-        <div className="inline-block px-6 py-3 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="text-blue-700 text-sm">
-            To add Google Ads tracking, please contact your account manager.
-          </p>
-        </div>
+  if (data?.hasGoogleAds === false) return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '20px 0', fontFamily: 'Inter, sans-serif' }}>
+      <Info size={16} color="#64748b" />
+      <div>
+        <p style={{ color: '#94a3b8', fontWeight: 600, fontSize: 13, margin: 0 }}>Google Ads Not Configured</p>
+        <p style={{ color: '#64748b', fontSize: 12, margin: '2px 0 0' }}>Not set up for {data.companyName}</p>
       </div>
-    );
-  }
+    </div>
+  );
 
-  if (error) {
-    return (
-      <div className="p-6 bg-red-50 border border-red-200 rounded-lg">
-        <div className="text-red-600 font-semibold text-lg">Error loading Google Ads</div>
-        <div className="text-red-500 text-sm mt-2">{error}</div>
-      </div>
-    );
-  }
+  if (error) return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontFamily: 'Inter, sans-serif' }}>
+      <AlertTriangle size={15} color="#f43f5e" />
+      <span style={{ color: '#f43f5e', fontSize: 13 }}>{error}</span>
+    </div>
+  );
 
-  if (!data || !data.metrics) {
-    return (
-      <div className="p-6 bg-gray-50 border border-gray-200 rounded-lg">
-        <div className="text-gray-600">No Google Ads data available</div>
-      </div>
-    );
-  }
+  if (!data?.metrics) return (
+    <p style={{ color: '#64748b', fontSize: 13, fontFamily: 'Inter, sans-serif', margin: 0 }}>No Google Ads data available</p>
+  );
+
+  const roas = data.metrics.cost > 0 ? (data.metrics.conversionsValue / data.metrics.cost).toFixed(2) : '0.00';
+
+  const kpis = [
+    { label: 'Impressions', value: data.metrics.impressions.toLocaleString(), color: '#60A5FA', Icon: BarChart2 },
+    { label: 'Clicks', value: data.metrics.clicks.toLocaleString(), color: '#34D399', Icon: MousePointer },
+    { label: 'CTR', value: `${data.metrics.ctr.toFixed(2)}%`, color: '#FBBF24', Icon: Percent },
+    { label: 'Total Spend', value: `$${data.metrics.cost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, color: '#F472B6', Icon: DollarSign },
+    { label: 'Conversions', value: data.metrics.conversions.toFixed(1), color: '#A78BFA', Icon: Target },
+    { label: 'Conv. Value', value: `$${data.metrics.conversionsValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, color: '#6EE7B7', Icon: TrendingUp },
+    { label: 'Avg CPC', value: `$${data.metrics.averageCpc.toFixed(2)}`, color: '#38BDF8', Icon: DollarSign },
+    { label: 'ROAS', value: `${roas}x`, color: '#FB7185', Icon: RefreshCw },
+  ];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900">Google Ads Performance</h2>
-        <p className="text-gray-500 text-sm mt-1">
-          Customer ID: {data.customerId}
-        </p>
+    <div style={{ fontFamily: 'Inter, sans-serif' }}>
+      {/* Section Header */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, paddingBottom: 14, borderBottom: '1px solid #1e293b' }}>
+        <TrendingUp size={14} color="#60A5FA" />
+        <span style={{ fontSize: 13, fontWeight: 600, color: '#f1f5f9' }}>Google Ads</span>
+        <span style={{ marginLeft: 'auto', fontSize: 11, color: '#475569' }}>ID: {data.customerId}</span>
       </div>
 
-      {/* Metrics Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <AdMetricCard
-          title="Impressions"
-          value={data.metrics.impressions.toLocaleString()}
-          color="blue"
-        />
-        <AdMetricCard
-          title="Clicks"
-          value={data.metrics.clicks.toLocaleString()}
-          color="green"
-        />
-        <AdMetricCard
-          title="CTR"
-          value={`${data.metrics.ctr.toFixed(2)}%`}
-          color="purple"
-        />
-        <AdMetricCard
-          title="Total Cost"
-          value={`$${data.metrics.cost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-          color="orange"
-        />
-        <AdMetricCard
-          title="Conversions"
-          value={data.metrics.conversions.toFixed(1)}
-          color="indigo"
-        />
-        <AdMetricCard
-          title="Conversion Value"
-          value={`$${data.metrics.conversionsValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-          color="teal"
-        />
-        <AdMetricCard
-          title="Avg CPC"
-          value={`$${data.metrics.averageCpc.toFixed(2)}`}
-          color="red"
-        />
-        <AdMetricCard
-          title="Cost/Conv"
-          value={data.metrics.conversions > 0 ? `$${(data.metrics.cost / data.metrics.conversions).toFixed(2)}` : '$0.00'}
-          color="pink"
-        />
+      {/* KPI Grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: 10, marginBottom: 16 }}>
+        {kpis.map(({ label, value, color, Icon }, i) => (
+          <div key={i} style={{ background: '#080f1a', borderRadius: 8, padding: '12px 14px', border: `1px solid ${color}20` }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <span style={{ fontSize: 10, color: '#475569', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>{label}</span>
+              <Icon size={12} color={color} strokeWidth={2} />
+            </div>
+            <div style={{ fontSize: 16, fontWeight: 700, color, letterSpacing: '-0.02em' }}>{value}</div>
+          </div>
+        ))}
       </div>
 
-      {/* Campaign Performance Chart */}
+      {/* Campaign Chart */}
       {data.campaigns && data.campaigns.length > 0 && (
-        <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
-          <h3 className="text-xl font-bold mb-4">Top Campaigns by Impressions</h3>
-          <ResponsiveContainer width="100%" height={400}>
-            <BarChart data={data.campaigns} margin={{ bottom: 80 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
-                dataKey="name" 
-                angle={-45} 
-                textAnchor="end" 
-                height={120}
-                interval={0}
-                tick={{ fontSize: 14 }}
-              />
-              <YAxis />
-              <Tooltip />
-              <Legend 
-                verticalAlign="bottom" 
-                wrapperStyle={{ paddingTop: '20px', bottom: '0px' }}
-              />
-              <Bar dataKey="impressions" fill="#0088FE" name="Impressions" />
-              <Bar dataKey="clicks" fill="#00C49F" name="Clicks" />
+        <div>
+          <p style={sectionTitle}>Campaign Breakdown</p>
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={data.campaigns} margin={{ bottom: 50 }} barSize={24}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+              <XAxis dataKey="name" tick={{ fill: '#64748b', fontSize: 10, fontFamily: 'Inter' }} angle={-25} textAnchor="end" height={70} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: '#64748b', fontSize: 11, fontFamily: 'Inter' }} axisLine={false} tickLine={false} />
+              <Tooltip content={<CustomTooltip />} />
+              <Bar dataKey="impressions" name="Impressions" radius={[3, 3, 0, 0]}>
+                {data.campaigns.map((_, i) => <Cell key={i} fill={PALETTE[i % PALETTE.length]} />)}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>
       )}
-    </div>
-  );
-}
-
-function AdMetricCard({ title, value, color }: { title: string; value: string; color: string }) {
-  const colorClasses: Record<string, string> = {
-    blue: 'text-blue-600',
-    green: 'text-green-600',
-    purple: 'text-purple-600',
-    orange: 'text-orange-600',
-    red: 'text-red-600',
-    indigo: 'text-indigo-600',
-    teal: 'text-teal-600',
-    pink: 'text-pink-600',
-  };
-
-  return (
-    <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
-      <div className="text-gray-500 text-xs font-medium">{title}</div>
-      <div className={`text-2xl font-bold mt-2 ${colorClasses[color]}`}>
-        {value}
-      </div>
     </div>
   );
 }

@@ -1,7 +1,6 @@
 import { copilotApi } from 'copilot-node-sdk';
 import { GA4Dashboard } from '@/app/components/GA4Dashboard';
 import { TokenGate } from '@/components/TokenGate';
-import { Container } from '@/components/Container';
 
 export const revalidate = 180;
 
@@ -12,19 +11,13 @@ async function Content({ searchParams }: { searchParams: SearchParams }) {
     token: typeof token === 'string' ? token : undefined,
   });
 
-  const workspace = await copilot.retrieveWorkspace();
-  
+  // Keep workspace retrieval if needed elsewhere
+  await copilot.retrieveWorkspace();
+
   return (
-    <Container>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
-          <p className="text-gray-600 mt-2">View your website analytics below</p>
-        </div>
-        
-        <GA4Dashboard />
-      </div>
-    </Container>
+    <div style={{ background: '#080f1a', minHeight: '100vh', margin: 0, padding: 0, width: '100%' }}>
+      <GA4Dashboard />
+    </div>
   );
 }
 
