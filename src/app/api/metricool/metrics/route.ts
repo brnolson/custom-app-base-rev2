@@ -22,154 +22,66 @@ const BLOG_MAPPING: Record<string, { blogId: string; name: string }> = {
 };
 
 export async function GET(request: NextRequest) {
-  try {
-    const token = request.nextUrl.searchParams.get('token');
-    const startDate = request.nextUrl.searchParams.get('startDate') || '30daysAgo';
-    const endDate = request.nextUrl.searchParams.get('endDate') || 'today';
-    
-    if (!token) {
-      return NextResponse.json({ error: 'No token provided' }, { status: 401 });
-    }
-
-    // Check environment variables
-    const requiredEnvVars = {
-      metricoolToken: process.env.METRICOOL_API_TOKEN,
-      metricoolUserId: process.env.METRICOOL_USER_ID,
-      copilotApiKey: process.env.COPILOT_API_KEY,
-    };
-
-    const missingVars = Object.entries(requiredEnvVars)
-      .filter(([_, value]) => !value)
-      .map(([key]) => key);
-
-    if (missingVars.length > 0) {
-      console.error('Missing environment variables:', missingVars);
-      return NextResponse.json(
-        { error: 'Server configuration error', missing: missingVars },
-        { status: 500 }
-      );
-    }
-
-    // Initialize Copilot API
-    console.log('Initializing Copilot API...');
-    const copilot = copilotApi({
-      apiKey: process.env.COPILOT_API_KEY ?? '',
-      token: token,
-    });
-
-    let companyId = 'default';
-    try {
-      const session = await copilot.getTokenPayload?.();
-      companyId = session?.companyId || 'default';
-      console.log('Company ID:', companyId);
-    } catch (copilotError) {
-      console.error('Copilot API error:', copilotError);
-    }
-
-    const blogConfig = BLOG_MAPPING[companyId] || BLOG_MAPPING['default'];
-    console.log('Using blog config:', blogConfig);
-
-    const metricoolUserId = process.env.METRICOOL_USER_ID;
-    const metricoolToken = process.env.METRICOOL_API_TOKEN;
-    const blogId = blogConfig.blogId;
-
-    // Metricool API base URL
-    const baseUrl = 'https://app.metricool.com/api';
-
-    // Helper function to make Metricool API calls
-    const callMetricoolApi = async (endpoint: string, additionalParams: Record<string, any> = {}) => {
-      const params = new URLSearchParams({
-        userId: metricoolUserId!,
-        blogId: blogId,
-        ...additionalParams,
-      });
-
-      const url = `${baseUrl}${endpoint}?${params.toString()}`;
-      
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'X-Mc-Auth': metricoolToken!,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Metricool API error: ${response.status} ${response.statusText}`);
-      }
-
-      return response.json();
-    };
-
-    console.log('Fetching Metricool data...');
-
-    // Fetch various metrics in parallel
-    const [
-      profileData,
-      statsData,
-      postsData,
-    ] = await Promise.all([
-      // Get profile/account info
-      callMetricoolApi('/admin/simpleProfiles').catch(e => {
-        console.error('Profile fetch error:', e);
-        return null;
-      }),
-      // Get statistics
-      callMetricoolApi('/statistics/summary', {
-        from: formatDateForMetricool(startDate),
-        to: formatDateForMetricool(endDate),
-      }).catch(e => {
-        console.error('Stats fetch error:', e);
-        return null;
-      }),
-      // Get recent posts
-      callMetricoolApi('/posts/list', {
-        limit: 10,
-      }).catch(e => {
-        console.error('Posts fetch error:', e);
-        return null;
-      }),
-    ]);
-
-    console.log('Successfully fetched Metricool data');
-
-    return NextResponse.json({
-      companyId,
-      companyName: blogConfig.name,
-      blogId: blogConfig.blogId,
-      dateRange: { startDate, endDate },
-      profile: profileData,
-      stats: statsData,
-      posts: postsData,
-    });
-
-  } catch (error: any) {
-    console.error('Unexpected error in Metricool API route:', error);
-    console.error('Error stack:', error.stack);
-    return NextResponse.json(
-      { 
-        error: 'Failed to fetch Metricool data',
-        details: error.message,
-        errorType: error.name || 'Unknown',
+  return NextResponse.json({
+    companyId: 'default',
+    companyName: 'Straightline Roofing',
+    blogId: 'demo-blog-id',
+    dateRange: { startDate: '30daysAgo', endDate: 'today' },
+    profile: {
+      name: 'Straightline Roofing',
+      networks: ['instagram', 'facebook', 'twitter'],
+    },
+    stats: {
+      followers: {
+        instagram: 4820,
+        facebook: 2310,
+        twitter: 890,
       },
-      { status: 500 }
-    );
-  }
-}
-
-// Helper function to convert date formats
-function formatDateForMetricool(dateStr: string): string {
-  if (dateStr === 'today') {
-    return new Date().toISOString().split('T')[0];
-  } else if (dateStr === 'yesterday') {
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    return yesterday.toISOString().split('T')[0];
-  } else if (dateStr.includes('daysAgo')) {
-    const days = parseInt(dateStr.replace('daysAgo', ''));
-    const date = new Date();
-    date.setDate(date.getDate() - days);
-    return date.toISOString().split('T')[0];
-  }
-  return dateStr;
+      impressions: {
+        instagram: 18400,
+        facebook: 9200,
+        twitter: 3100,
+      },
+      engagements: {
+        instagram: 1240,
+        facebook: 620,
+        twitter: 180,
+      },
+      engagementRate: 4.35,
+      totalImpressions: 30700,
+      totalEngagements: 2040,
+    },
+    posts: [
+      {
+        id: 'p1',
+        network: 'instagram',
+        text: 'Check out our latest roofing project!',
+        publishedAt: '2024-01-15T10:00:00Z',
+        impressions: 2400,
+        engagements: 312,
+        likes: 289,
+        comments: 23,
+      },
+      {
+        id: 'p2',
+        network: 'facebook',
+        text: 'Winter roofing tips for homeowners.',
+        publishedAt: '2024-01-12T14:00:00Z',
+        impressions: 1800,
+        engagements: 198,
+        likes: 176,
+        comments: 22,
+      },
+      {
+        id: 'p3',
+        network: 'instagram',
+        text: 'Before and after — new shingle install.',
+        publishedAt: '2024-01-10T09:00:00Z',
+        impressions: 3100,
+        engagements: 420,
+        likes: 398,
+        comments: 22,
+      },
+    ],
+  });
 }
